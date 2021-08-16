@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Ça Fait La Job Remote</string>
+    <string name="left_click">Left Click</string>
+    <string name="right_click">Right Click</string>
+    <string name="a_fait_la_job">Ça Fait La Job</string>
+    <string name="uiui">uiui</string>
+    <string name="input_hint">Enter text to send keyboard input</string>
+    <string name="edit_address">Edit Address</string>
+</resources>

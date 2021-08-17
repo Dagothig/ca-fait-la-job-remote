@@ -205,7 +205,7 @@ class MainActivity: AppCompatActivity() {
 
         if (prefs != null) {
             val savedFullAddr = prefs.getString("pref_addr", "") ?: "address:port"
-            val (savedAddr, savePort) = savedFullAddr.split(":")
+            val (savedAddr, savePort) = ("$savedFullAddr:8000").split(":")
             serverAddress = savedAddr
             serverPort = savePort.toIntOrNull()
 

@@ -147,13 +147,8 @@ class MainActivity: AppCompatActivity() {
         toggleInput = findViewById(R.id.toggle_input)
         toggleInput?.setOnClickListener {
             val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
-            if (textInput?.hasFocus() == true) {
-                textInput?.requestFocus()
-                imm.showSoftInput(textInput, InputMethodManager.SHOW_IMPLICIT)
-            } else {
-                textInput?.clearFocus()
-                imm.hideSoftInputFromWindow(textInput?.windowToken, 0)
-            }
+            textInput?.requestFocus()
+            imm.showSoftInput(textInput, InputMethodManager.SHOW_IMPLICIT)
         }
         keyboardZone?.removeView(toggleInput)
         keyboardZone?.addView(toggleInput)

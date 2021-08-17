@@ -6,4 +6,6 @@
     <string name="uiui">uiui</string>
     <string name="input_hint">Enter text to send keyboard input</string>
     <string name="edit_address">Edit Address</string>
+    <string name="toggle_input">Toggle Input</string>
+    <string name="text_input_hint">Text Input</string>
 </resources>

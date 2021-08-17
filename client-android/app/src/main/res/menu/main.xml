@@ -3,7 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/edit_address"
-        android:icon="@drawable/baseline_edit_24"
+        android:icon="@drawable/baseline_settings_24"
         android:title="@string/edit_address"
         app:showAsAction="ifRoom" />
 </menu>

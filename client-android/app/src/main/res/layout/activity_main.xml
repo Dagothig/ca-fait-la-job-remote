@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout
+    android:id="@+id/layout"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -7,18 +8,6 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity"
     android:layout_margin="8dp">
-
-    <!--EditText
-        android:id="@+id/keyboard_input"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:inputType="none"
-        android:hint="@string/input_hint"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:importantForAutofill="no"
-        tools:ignore="LabelFor" /-->
 
     <FrameLayout
         android:id="@+id/zone_cursor"
@@ -30,7 +19,6 @@
         app:layout_constraintTop_toTopOf="parent"
         android:layout_marginTop="8dp"
         android:layout_marginBottom="8dp">
-
         <ImageView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -38,12 +26,6 @@
             android:scaleType="centerCrop"
             android:src="@drawable/lajob"
             android:contentDescription="@string/a_fait_la_job"/>
-
-        <View
-            android:id="@+id/cursor_indicator"
-            android:layout_width="82dp"
-            android:layout_height="98.5dp"
-            android:background="@drawable/uiui"/>
     </FrameLayout>
 
     <Button
@@ -51,10 +33,10 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginEnd="4dp"
+        android:layout_marginBottom="8dp"
         android:text="@string/left_click"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/keyboard_zone"
         app:layout_constraintEnd_toStartOf="@+id/right_click"
-        app:layout_constraintHorizontal_chainStyle="spread"
         app:layout_constraintStart_toStartOf="parent"/>
 
     <Button
@@ -64,8 +46,45 @@
         android:text="@string/right_click"
         app:layout_constraintStart_toEndOf="@+id/left_click"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/keyboard_zone"
+        android:layout_marginStart="4dp"
+        android:layout_marginBottom="8dp"/>
+
+    <EditText
+        android:id="@+id/text_input"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:alpha="0"
+        app:layout_constraintStart_toStartOf="@+id/toggle_input"
+        app:layout_constraintEnd_toEndOf="@+id/toggle_input"
+        app:layout_constraintTop_toTopOf="@+id/toggle_input"
+        app:layout_constraintBottom_toBottomOf="@+id/toggle_input"
+        android:inputType="textNoSuggestions"
+        android:importantForAutofill="no"
+        android:hint="@string/text_input_hint"
+        android:imeOptions="actionGo"/>
+
+    <Button
+        android:id="@+id/toggle_input"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:icon="@drawable/outline_keyboard_24"
+        app:iconGravity="textStart"
+        app:iconPadding="0dp"/>
+
+    <androidx.constraintlayout.helper.widget.Flow
+        android:id="@+id/keyboard_zone"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintHorizontal_chainStyle="spread"
-        android:layout_marginStart="4dp"/>
+        app:flow_maxElementsWrap="5"
+        app:flow_horizontalGap="8dp"
+        app:flow_verticalGap="8dp"
+        android:orientation="horizontal"
+        app:flow_horizontalStyle="packed"
+        app:flow_wrapMode="chain"
+        app:constraint_referenced_ids="toggle_input"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

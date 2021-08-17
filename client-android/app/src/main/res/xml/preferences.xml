@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <EditTextPreference
+        android:defaultValue="address:port"
+        android:inputType="textUri"
+        android:key="pref_addr"
+        android:title="Server address"
+        app:useSimpleSummaryProvider="true"
+        android:icon="@drawable/baseline_settings_ethernet_24"/>
+
+    <EditTextPreference
+        android:defaultValue="1"
+        android:inputType="numberDecimal"
+        android:key="pref_cursor_h_mult"
+        android:title="Cursor horizontal multiplier"
+        app:useSimpleSummaryProvider="true"
+        android:icon="@drawable/baseline_swap_horiz_24"/>
+
+    <EditTextPreference
+        android:defaultValue="1"
+        android:inputType="numberDecimal"
+        android:key="pref_cursor_v_mult"
+        android:title="Cursor vertical multiplier"
+        app:useSimpleSummaryProvider="true"
+        android:icon="@drawable/baseline_swap_vert_24"/>
+</PreferenceScreen>

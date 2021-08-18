@@ -81,11 +81,7 @@ class MainActivity: AppCompatActivity() {
             }
             x = newX
             y = newY
-            false
-        }
-        cursorZone?.setOnClickListener { _ ->
-            actions.add(CursorAction(v = v.or(1), 0f, 0f))
-            actions.add(CursorAction(v = v.and(1.inv()), 0f, 0f))
+            true
         }
 
         leftClick = findViewById(R.id.left_click)

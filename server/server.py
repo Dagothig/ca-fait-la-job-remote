@@ -38,23 +38,27 @@ def handle_keyboard_event(address, c, v):
             else:
                 keyboard.write(c, exact=True)
 
+left_pressed = False
+right_pressed = False
 def handle_mouse_event(address, v, x, y):
+    global left_pressed, right_pressed
     left = v & 1
-    left_pressed = mouse.is_pressed('left')
     if left and not left_pressed:
         mouse.press('left')
+        left_pressed = True
     if not left and left_pressed:
         mouse.release('left')
+        left_pressed = False
 
     right = v & 2
-    right_pressed = mouse.is_pressed('right')
     if right and not right_pressed:
         mouse.press('right')
+        right_pressed = True
     if not right and right_pressed:
         mouse.release('right')
+        right_pressed = False
 
     mouse.move(x, y, False)
-
 
 dispatcher = Dispatcher()
 dispatcher.map("/keyboard", handle_keyboard_event)
@@ -63,5 +67,4 @@ dispatcher.map("/mouse", handle_mouse_event)
 with BlockingOSCUDPServer(("", PORT), dispatcher) as server:
     print("Server started with address", get_ip() + ":" + str(PORT))
     server.serve_forever()
-print("AAA")
 sys.stdout.flush()

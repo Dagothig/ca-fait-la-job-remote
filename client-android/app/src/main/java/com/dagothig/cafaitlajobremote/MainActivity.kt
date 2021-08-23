@@ -26,6 +26,7 @@ import java.net.InetAddress
 import java.util.*
 import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.BlockingQueue
+import kotlin.math.pow
 
 interface IAction {}
 
@@ -51,6 +52,9 @@ class MainActivity: AppCompatActivity() {
     private var x: Float = 0.5f
     private var y: Float = 0.5f
     private var v: Int = 0
+    private var sx: Float = 0f
+    private var sy: Float = 0f
+    private var stime: Long = 0L
 
     private var keyboardZone: Flow? = null
     private var keys: Dictionary<String, Button>? = null
@@ -74,9 +78,22 @@ class MainActivity: AppCompatActivity() {
         cursorZone?.setOnTouchListener { _, ev ->
             val newX = ev.x * cursorHMult
             val newY = ev.y * cursorVMult
+            val now = Date().time
             when (ev.action) {
                 MotionEvent.ACTION_MOVE -> {
                     actions.add(CursorAction(v, newX - x, newY - y))
+                }
+                MotionEvent.ACTION_DOWN -> {
+                    sx = newX
+                    sy = newY
+                    stime = now
+                }
+                MotionEvent.ACTION_UP -> {
+                    if (now - stime < 1000 &&
+                        (newX - sx).pow(2) + (newY - sy).pow(2) < 64) {
+                        actions.add(CursorAction(v = v.or(1), newX - x, newY - y))
+                        actions.add(CursorAction(v = v.and(1.inv()), newX - x, newY - y))
+                    }
                 }
             }
             x = newX

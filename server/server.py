@@ -1,8 +1,21 @@
 import sys
 
-if len(sys.argv) < 1:
+def help():
     print("Usage: python3 server.py {port?}")
     exit()
+
+def version():
+    print("ca-fait-la-job-remote 0.2")
+    exit()
+
+if len(sys.argv) < 1:
+    help()
+for arg in sys.argv:
+    if arg == "--help" or arg == "-h":
+        help()
+    elif arg == "--version" or arg == "-v":
+        version()
+
 PORT = 8000 if len(sys.argv) < 2 else int(sys.argv[1])
 
 import socket

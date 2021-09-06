@@ -3,11 +3,7 @@ package com.dagothig.cafaitlajobremote
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.SharedPreferences
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.text.Editable
-import android.text.InputType
-import android.text.method.KeyListener
 import android.view.KeyEvent
 import android.view.Menu
 import android.view.MotionEvent
@@ -16,6 +12,7 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.helper.widget.Flow
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.widget.doOnTextChanged
@@ -26,9 +23,12 @@ import java.net.InetAddress
 import java.util.*
 import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.BlockingQueue
+import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.pow
+import kotlin.math.sqrt
 
-interface IAction {}
+interface IAction
 
 data class KeyDef(val s: String, val v: String)
 data class CursorAction(val v: Int, val x: Float, val y: Float): IAction
@@ -39,6 +39,8 @@ class MainActivity: AppCompatActivity() {
     private var serverPort: Int? = null
     private var cursorHMult: Float = 1f
     private var cursorVMult: Float = 1f
+    private var wheelMult: Float = 0.1f
+    private var applyAccel: Boolean = true
 
     private var prefs: SharedPreferences? = null
     private var started: Boolean = true
@@ -49,9 +51,10 @@ class MainActivity: AppCompatActivity() {
     private var leftClick: Button? = null
     private var rightClick: Button? = null
 
+    private var v: Int = 0
     private var x: Float = 0.5f
     private var y: Float = 0.5f
-    private var v: Int = 0
+    private var time: Long = 0L
     private var sx: Float = 0f
     private var sy: Float = 0f
     private var stime: Long = 0L
@@ -64,7 +67,7 @@ class MainActivity: AppCompatActivity() {
     private val actions: BlockingQueue<IAction>
 
     init {
-        actions = ArrayBlockingQueue(10)
+        actions = ArrayBlockingQueue( 69)
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -79,9 +82,20 @@ class MainActivity: AppCompatActivity() {
             val newX = ev.x * cursorHMult
             val newY = ev.y * cursorVMult
             val now = Date().time
+            var dx = newX - x
+            var dy = newY - y
+            val dt = now - time
+            if (applyAccel) {
+                val speed = min(max(0.25f, sqrt(dx * dx + dy * dy) / dt), 3f)
+                dx *= speed
+                dy *= speed
+            }
             when (ev.action) {
                 MotionEvent.ACTION_MOVE -> {
-                    actions.add(CursorAction(v, newX - x, newY - y))
+                    if (ev.pointerCount > 1)
+                        actions.add(CursorAction(v.or(4), dx * wheelMult, dy * wheelMult))
+                    else
+                        actions.add(CursorAction(v, dx, dy))
                 }
                 MotionEvent.ACTION_DOWN -> {
                     sx = newX
@@ -91,13 +105,14 @@ class MainActivity: AppCompatActivity() {
                 MotionEvent.ACTION_UP -> {
                     if (now - stime < 1000 &&
                         (newX - sx).pow(2) + (newY - sy).pow(2) < 64) {
-                        actions.add(CursorAction(v = v.or(1), newX - x, newY - y))
-                        actions.add(CursorAction(v = v.and(1.inv()), newX - x, newY - y))
+                        actions.add(CursorAction(v.or(1), dx, dy))
+                        actions.add(CursorAction(v.and(1.inv()), dx, dy))
                     }
                 }
             }
             x = newX
             y = newY
+            time = now
             true
         }
 
@@ -219,6 +234,10 @@ class MainActivity: AppCompatActivity() {
 
             cursorHMult = prefs.getString("pref_cursor_h_mult", "1")?.toFloatOrNull() ?: 1f
             cursorVMult = prefs.getString("pref_cursor_v_mult", "1")?.toFloatOrNull() ?: 1f
+
+            wheelMult = prefs.getString("pref_wheel_mult", "0.1")?.toFloatOrNull() ?: 0.1f
+
+            applyAccel = prefs.getBoolean("pref_accel_modifier", true)
         }
 
         started = true
@@ -258,6 +277,7 @@ class MainActivity: AppCompatActivity() {
                         break
                 }
             } catch(e: Exception) {
+                actions.clear()
                 alert(e.message)
             } finally {
                 out?.close()

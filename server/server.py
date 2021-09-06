@@ -1,10 +1,9 @@
 import sys
 
 if len(sys.argv) < 1:
-    print("Usage: python3 server.py")
+    print("Usage: python3 server.py {port?}")
     exit()
-
-PORT = 8000
+PORT = 8000 if len(sys.argv) < 2 else int(sys.argv[1])
 
 import socket
 def get_ip():
@@ -21,6 +20,7 @@ def get_ip():
 
 import keyboard
 import mouse
+
 from pythonosc.dispatcher import Dispatcher
 from pythonosc.osc_server import BlockingOSCUDPServer
 
@@ -33,7 +33,7 @@ def handle_keyboard_event(address, c, v):
         for car in c:
             if car == " ":
                 car = "space"
-            if car.isalnum() or car == "space":
+            if (car.isalnum() and car.islower()) or car == "space":
                 keyboard.press_and_release(car)
             else:
                 keyboard.write(c, exact=True)
@@ -58,7 +58,11 @@ def handle_mouse_event(address, v, x, y):
         mouse.release('right')
         right_pressed = False
 
-    mouse.move(x, y, False)
+    wheel = v & 4
+    if wheel:
+        mouse.wheel(y)
+    else:
+        mouse.move(x, y, False)
 
 dispatcher = Dispatcher()
 dispatcher.map("/keyboard", handle_keyboard_event)
@@ -66,5 +70,5 @@ dispatcher.map("/mouse", handle_mouse_event)
 
 with BlockingOSCUDPServer(("", PORT), dispatcher) as server:
     print("Server started with address", get_ip() + ":" + str(PORT))
+    sys.stdout.flush()
     server.serve_forever()
-sys.stdout.flush()

@@ -6,8 +6,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity"
-    android:layout_margin="8dp">
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    tools:context=".MainActivity">
 
     <FrameLayout
         android:id="@+id/zone_cursor"
@@ -16,9 +17,7 @@
         app:layout_constraintBottom_toTopOf="@+id/left_click"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp">
+        app:layout_constraintTop_toTopOf="parent">
         <ImageView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -32,8 +31,6 @@
         android:id="@+id/left_click"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="4dp"
-        android:layout_marginBottom="8dp"
         android:text="@string/left_click"
         app:layout_constraintBottom_toTopOf="@+id/keyboard_zone"
         app:layout_constraintEnd_toStartOf="@+id/right_click"
@@ -46,9 +43,7 @@
         android:text="@string/right_click"
         app:layout_constraintStart_toEndOf="@+id/left_click"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/keyboard_zone"
-        android:layout_marginStart="4dp"
-        android:layout_marginBottom="8dp"/>
+        app:layout_constraintBottom_toTopOf="@+id/keyboard_zone"/>
 
     <EditText
         android:id="@+id/text_input"
@@ -68,9 +63,7 @@
         android:id="@+id/toggle_input"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        app:icon="@drawable/outline_keyboard_24"
-        app:iconGravity="textStart"
-        app:iconPadding="0dp"/>
+        android:text="⌨"/>
 
     <androidx.constraintlayout.helper.widget.Flow
         android:id="@+id/keyboard_zone"
@@ -80,8 +73,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:flow_maxElementsWrap="5"
-        app:flow_horizontalGap="8dp"
-        app:flow_verticalGap="8dp"
         android:orientation="horizontal"
         app:flow_horizontalStyle="packed"
         app:flow_wrapMode="chain"

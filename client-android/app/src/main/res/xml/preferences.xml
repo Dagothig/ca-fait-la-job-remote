@@ -12,7 +12,6 @@
 
     <EditTextPreference
         android:defaultValue="1"
-        android:inputType="numberDecimal"
         android:key="pref_cursor_h_mult"
         android:title="Cursor horizontal multiplier"
         app:useSimpleSummaryProvider="true"
@@ -20,9 +19,23 @@
 
     <EditTextPreference
         android:defaultValue="1"
-        android:inputType="numberDecimal"
         android:key="pref_cursor_v_mult"
         android:title="Cursor vertical multiplier"
         app:useSimpleSummaryProvider="true"
         android:icon="@drawable/baseline_swap_vert_24"/>
+
+    <EditTextPreference
+        android:defaultValue="0.1"
+        android:key="pref_wheel_mult"
+        android:title="Wheel mulitplier"
+        app:useSimpleSummaryProvider="true"
+        android:icon="@drawable/baseline_speed_24"/>
+
+    <SwitchPreference
+        android:defaultValue="true"
+        android:key="pref_accel_modifier"
+        android:title="Apply acceleration modifier"
+        app:useSimpleSummaryProvider="true"
+        android:icon="@drawable/baseline_swipe_24" />
+
 </PreferenceScreen>

@@ -37,5 +37,4 @@
         android:title="Apply acceleration modifier"
         app:useSimpleSummaryProvider="true"
         android:icon="@drawable/baseline_swipe_24" />
-
 </PreferenceScreen>

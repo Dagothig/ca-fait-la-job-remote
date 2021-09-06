@@ -5,7 +5,7 @@ def help():
     exit()
 
 def version():
-    print("ca-fait-la-job-remote 0.2")
+    print("ca-fait-la-job-remote/server 1.1")
     exit()
 
 if len(sys.argv) < 1:

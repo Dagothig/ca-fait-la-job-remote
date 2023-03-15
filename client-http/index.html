@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport" content="initial-scale=1, minimum-scale=1, maximum-scale=1"/>
+        <style>
+            :root {
+                --bg10-color: #182226;
+                --bg20-color: #283337;
+                --bg30-color: #384448;
+            }
+            html, body {
+                margin: 0;
+                padding: 0;
+                height: 100%;
+                font-size: 10pt;
+                font-family: sans-serif;
+            }
+            #remote {
+                display: grid;
+                height: 100%;
+                grid-template-areas:
+                    "touchy"
+                    "keys";
+                grid-template-rows: 1fr auto;
+            }
+            #touchy {
+                grid-area: touchy;
+                background-image: url("lajob.jpg");
+                background-size: cover;
+                background-position: center;
+            }
+            #keys {
+                grid-area: keys;
+                display: flex;
+                flex-direction: column;
+                gap: 0.5em;
+                padding: 0.5em;
+                background: var(--bg10-color);
+            }
+            .key-row {
+                display: flex;
+                flex-direction: row;
+                gap: 0.5em;
+            }
+            .key {
+                display: flex;
+                text-align: center;
+                align-items: center;
+                justify-content: center;
+                flex-grow: 1;
+                width: 0;
+                height: 3em;
+                color: #eee;
+                background: var(--bg30-color);
+                border: none;
+                text-transform: uppercase;
+                font-weight: bold;
+                box-shadow: var(--bg20-color) 0 -0.25em inset;
+                border-radius: 0.25em;
+                padding: 0;
+                padding-bottom: 0.25em;
+                position: relative;
+                box-sizing: border-box;
+                font-size: 1em;
+            }
+            .key-down {
+                padding-bottom: 0;
+                background: var(--bg20-color);
+            }
+            #keyboard-input {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                padding: 0;
+                border: none;
+                z-index: -1;
+            }
+            label.key:focus-within {
+                --bg30-color: #095;
+                --bg20-color: #074;
+            }
+            @media (min-aspect-ratio: 1) {
+                #remote {
+                    grid-template-areas: "keys touchy";
+                    grid-template-columns: auto 1fr;
+                    grid-template-rows: 1fr;
+                }
+                #keys {
+                    width: 40vw;
+                }
+                .key-row {
+                    flex-grow: 1;
+                }
+                .key {
+                    height: 100%;
+                }
+            }
+
+            .toggle-input {
+                position: fixed;
+                left: 100%;
+            }
+            .toggle-input:not(:checked)+.toggle+* {
+                display: none;
+            }
+            [for=settings-toggle] {
+                position: absolute;
+                top: 0;
+                right: 0;
+                z-index: 1;
+                padding: 0.75rem;
+                text-align: center;
+                width: 1.2em;
+                line-height: 1.2em;
+                font-size: 1.75em;
+                color: transparent;
+                text-shadow:
+                    0px 0px 1px white,
+                    0px 2px 2px black;
+            }
+            #settings {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                overflow-x: hidden;
+                overflow-y: auto;
+                color: #eee;
+                background: var(--bg10-color);
+                box-sizing: border-box;
+                padding: 0 1rem;
+            }
+            h2, h3 {
+                margin: 1rem 0;
+            }
+            #settings label {
+                display: flex;
+                background: var(--bg20-color);
+                font-size: 1.15em;
+                padding: 0.5rem 1rem;
+                flex-grow: 1;
+                flex-direction: column;
+                border-radius: 0.25rem;
+            }
+            #settings label+label {
+                margin-top: 1rem;
+            }
+            #settings label input {
+                background: transparent;
+                border: none;
+                color: #eee;
+            }
+            #settings label input:focus {
+                outline: none;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="remote">
+            <div id="touchy"></div>
+            <div id="keys"></div>
+        </div>
+        <input id="settings-toggle" type="checkbox" class="toggle-input">
+        <label for="settings-toggle" class="toggle">⚙️</label>
+        <div id="settings">
+            <h2>Settings</h2>
+            <section>
+                <h3>Cursor</h3>
+                <label>
+                    <span>Horizontal</span>
+                    <input type="number" name="cursorHMult" />
+                </label>
+                <label>
+                    <span>Vertical</span>
+                    <input type="number" name="cursorVMult" />
+                </label>
+                <label>
+                    <span>Scroll</span>
+                    <input type="number" name="wheelMult" />
+                </label>
+                <label>
+                    <span>Acceleration</span>
+                    <input type="number" name="accel" />
+                </label>
+            </section>
+        </div>
+        <template id="keyRowTemplate">
+            <div class="key-row"></div>
+        </template>
+        <template id="keyboardInputTemplate">
+            <label class="key">
+                <input id="keyboard-input">
+            </label>
+        </template>
+        <template id="keyTemplate">
+            <button type="button" class="key"></button>
+        </template>
+        <script>
+            const touchyNode = document.querySelector("#touchy");
+            const actions = [];
+            function addAction(...toAdd) {
+                for (const action of toAdd) {
+                    const last = actions[actions.length - 1];
+                    if (last && last.type === action.type) {
+                        ["dx", "dy"].forEach(key => {
+                            Number.isFinite(last[key]) || (last[key] = 0);
+                            Number.isFinite(action[key]) || (action[key] = 0);
+                        });
+                        last.dx += action.dx;
+                        last.dy += action.dy;
+                    } else {
+                        actions.push(action);
+                    }
+                }
+            }
+
+            const cursorConfig = {
+                cursorHMult: 2,
+                cursorVMult: 2,
+                wheelMult: 0.5,
+                accel: 0.5
+            };
+
+            for (const key in cursorConfig) {
+                const input = document.querySelector(`[name=${ key }]`);
+                const fromLocalStorage = parseFloat(localStorage.getItem(key));
+                input.value = isFinite(fromLocalStorage) ? fromLocalStorage : cursorConfig[key];
+                input.addEventListener("change", e => {
+                    const newValue = parseFloat(e.target.value);
+                    if (!isFinite(newValue)) {
+                        e.target.value = cursorConfig[key];
+                        alert("No such good format.");
+                    } else {
+                        cursorConfig[key] = newValue;
+                        localStorage.setItem(key, newValue);
+                    }
+                });
+            }
+
+            let time = Date.now(),
+                stime = Date.now(),
+                x = 0,
+                y = 0,
+                sx = 0,
+                sy = 0,
+                dx = 0,
+                dy = 0,
+                touchLen = 1;
+            function processTouchEvent (e) {
+                const touches = Array.from(e.touches);
+                touchLen = touches.length;
+                const newX = touchLen ? (touches.reduce((n, t) => n + t.screenX, 0) / touchLen) : x;
+                const newY = touchLen ? (touches.reduce((n, t) => n + t.screenY, 0) / touchLen) : y;
+                const now = Date.now();
+                dx = (newX - x) * cursorConfig.cursorHMult;
+                dy = (newY - y) * cursorConfig.cursorVMult;
+                const dt = now - time;
+                const speed = Math.min(Math.max(0.25, Math.sqrt(dx * dx + dy * dy) / dt), 3) - 1;
+                dx *= (1 + speed * cursorConfig.accel);
+                dy *= (1 + speed * cursorConfig.accel);
+                x = newX;
+                y = newY;
+                time = now;
+            }
+            touchyNode.addEventListener("touchstart", e => {
+                processTouchEvent(e);
+                sx = x;
+                sy = y;
+                stime = time;
+            });
+            touchyNode.addEventListener("touchend", e => {
+                processTouchEvent(e);
+                time - stime < 1000 && Math.pow(x - sx, 2) + Math.pow(y - sy, 2) < 64 &&
+                    addAction({ type: "left/click", dx, dy });
+            });
+            touchyNode.addEventListener("touchmove", e => {
+                processTouchEvent(e);
+                if (touchLen > 1)
+                    addAction({
+                        type: "wheel/move",
+                        dx: dx * cursorConfig.wheelMult,
+                        dy: dy * cursorConfig.wheelMult
+                    });
+                else
+                    addAction({ type: "pos/move", dx, dy });
+            });
+
+            window.setInterval(() => {
+                let ev = null;
+                for (const action of actions) {
+                    send("cursor/" + action.type + "/" + action.dx + "/" + action.dy);
+                }
+                actions.length = 0;
+            }, 1000 / 60);
+
+            let keys = [
+                [["left click", "cursor/left"], ["right click", "cursor/right"]],
+                [["esc", "escape"], ["↑", "up"], ["↓", "down"], ["←", "left"], ["→", "right"]],
+                [["sh", "shift"], ["ctl","ctrl"], ["win", "win"], "alt", ["⌨", "keys"]]
+            ];
+
+            const templates = {
+                keys: keyboardInputTemplate
+            };
+
+            const keysNode = document.querySelector("#keys");
+            function createKeys() {
+                keysNode.innerHTML = "";
+                for (const [rowIndex, row] of keys.entries()) {
+                    const rowNode = keyRowTemplate.content.cloneNode(true).children[0];
+                    for (const key of row) {
+                        let [text, code] = Array.isArray(key) ? key : [key, key];
+                        const keyNode = (templates[code] || keyTemplate)
+                            .content.cloneNode(true)
+                            .children[0];
+                        if (!code.includes("/")) {
+                            code = "keyboard/" + code;
+                        }
+                        keyNode.appendChild(document.createTextNode(text));
+                        keyNode.id = "key-" + code.replaceAll(" ", "-");
+                        if (keyNode.type === "button") {
+                            keyNode.dataset.code = code;
+                        }
+                        rowNode.appendChild(keyNode);
+                    }
+                    keysNode.appendChild(rowNode);
+                }
+            }
+            createKeys();
+
+            keysNode.addEventListener("touchstart", e =>
+                e.target.dataset.code && (
+                    send(e.target.dataset.code + "/down"),
+                    e.target.classList.add("key-down")));
+            const keyTouchEnd = e =>
+                e.target.dataset.code && (
+                    send(e.target.dataset.code + "/up"),
+                    e.target.classList.remove("key-down"));
+            keysNode.addEventListener("touchend", keyTouchEnd);
+            keysNode.addEventListener("touchcancel", keyTouchEnd);
+
+            const keyboardInput = document.querySelector("#keyboard-input");
+            let backspaceTimeout = null;
+            if (keyboardInput) {
+                keyboardInput.value = " ";
+                keyboardInput.addEventListener("input", e => {
+                    if (e.target.value.length < 1) {
+                        send("keyboard/backspace/down");
+                        send("keyboard/backspace/up");
+                    } else {
+                        send("keyboard/input/" + e.target.value.substring(1));
+                    }
+                    e.target.value = " ";
+                });
+            }
+
+            const regexp = /(\w+:\/\/)([\w0-9\.]+)(?:\:[0-9\.]+)/;
+            const match = location.href.match(regexp);
+            const domain = match[2];
+
+            const $sleep = time => new Promise(res => setTimeout(res, time));
+
+            const _$open = () => new Promise((res, rej) => {
+                try {
+                    const socket = new WebSocket("ws:" + domain + ":8765");
+                    socket.addEventListener("open", () => res(socket));
+                    socket.addEventListener("close", () => res(null));
+                } catch (err) {
+                    rej(err);
+                }
+            });
+
+            let $socket = null;
+            const $open = () => $socket || ($socket = (async () => {
+                console.log("wa");
+                let socket = null, backoff = 100;
+                try {
+                    while (!(socket = await _$open()) && backoff <= 3200){
+                        await $sleep(backoff *= 2);
+                    }
+                    if (socket) {
+                        socket.addEventListener("close", () => $socket = null);
+                    } else {
+                        // Ohno
+                        $socket = null;
+                        throw new Error("Could not establish connection");
+                    }
+                } catch (err) {
+                    $socket = null;
+                    throw err;
+                }
+                return socket;
+            })());
+
+            async function send(msg) {
+                try {
+                    const socket = await $open();
+                    socket.send(msg);
+                } catch (err) {
+                    alert(err);
+                }
+            }
+        </script>
+    </body>
+</html>

@@ -1,0 +1,5 @@
+keyboard
+mouse
+pynput
+python-osc
+websockets

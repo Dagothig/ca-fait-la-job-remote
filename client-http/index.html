@@ -357,7 +357,7 @@
                 });
             }
 
-            const regexp = /(\w+:\/\/)([\w0-9\.]+)(?:\:[0-9\.]+)/;
+            const regexp = /(\w+:\/\/)([\w0-9\.]+)(?:\:[0-9\.]+)?/;
             const match = location.href.match(regexp);
             const domain = match[2];
 
@@ -375,10 +375,9 @@
 
             let $socket = null;
             const $open = () => $socket || ($socket = (async () => {
-                console.log("wa");
                 let socket = null, backoff = 100;
                 try {
-                    while (!(socket = await _$open()) && backoff <= 3200){
+                    while (!(socket = await _$open()) && backoff <= 1600){
                         await $sleep(backoff *= 2);
                     }
                     if (socket) {
@@ -386,7 +385,7 @@
                     } else {
                         // Ohno
                         $socket = null;
-                        throw new Error("Could not establish connection");
+                        throw new Error("Could not establish connection to " + "ws:" + domain + ":8765");
                     }
                 } catch (err) {
                     $socket = null;

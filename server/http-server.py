@@ -1,7 +1,20 @@
+import sys
+
+for arg in sys.argv:
+    if arg == "--help" or arg == "-h":
+        print("""Usage: sudo python3 http-server.py {html-port=80} {socket-port=8765}""")
+        exit()
+
+HTTP_PORT = 80 if len(sys.argv) < 2 else int(sys.argv[1])
+SOCKET_PORT = 8765 if len(sys.argv) < 3 else int(sys.argv[2])
+
 import asyncio
 import websockets
 import pynput
 import keyboard
+import http.server
+import socketserver
+import os
 
 mouse = pynput.mouse.Controller()
 buttonByKey = {
@@ -9,7 +22,7 @@ buttonByKey = {
     "right": pynput.mouse.Button.right
 }
 
-async def echo(websocket):
+async def handle_socket(websocket):
     async for msg in websocket:
         parts = msg.split("/")
         controller = parts[0]
@@ -47,10 +60,13 @@ async def echo(websocket):
                     keyboard.press(key)
                 elif is_up:
                     keyboard.release(key)
-
 async def main():
-    async with websockets.serve(echo, "", 8765):
-        print("Listening on port 8765")
+    async with websockets.serve(handle_socket, "", SOCKET_PORT):
+        print("Socket listening on port", SOCKET_PORT)
         await asyncio.Future()
+        os.chdir("../client-http")
+        with socketserver.TCPServer(("", HTTP_PORT), http.server.SimpleHTTPRequestHandler) as httpd:
+            print("Server http at port", HTTP_PORT)
+            httpd.serve_forever()
 
 asyncio.run(main())

@@ -63,7 +63,6 @@ async def handle_socket(websocket):
 async def main():
     async with websockets.serve(handle_socket, "", SOCKET_PORT):
         print("Socket listening on port", SOCKET_PORT)
-        await asyncio.Future()
         os.chdir("../client-http")
         with socketserver.TCPServer(("", HTTP_PORT), http.server.SimpleHTTPRequestHandler) as httpd:
             print("Server http at port", HTTP_PORT)
